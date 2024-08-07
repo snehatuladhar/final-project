@@ -36,7 +36,7 @@ jobs:
 
       - name: Terraform Apply
         run: |
-          cd terraform
+          cd Terraform
           terraform apply -var-file=terraform.tfvars -auto-approve
 
       - name: Install Ansible and AWS collections
