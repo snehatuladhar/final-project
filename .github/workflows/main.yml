@@ -15,9 +15,6 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
       AWS_DEFAULT_REGION: us-east-1
-      AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }} 
-      STATE_BUCKET: "8586-terraform-state"
-      STATE_BUCKET_KEY: "sneha/modules.tfstate"
 
     steps:
       - name: Checkout code
@@ -26,7 +23,7 @@ jobs:
       - name: Terraform Init
         run: |
           cd Terraform
-          terraform init -backend-config="region=${{ env.AWS_DEFAULT_REGION }}" -backend-config="key=${{ secrets.AWS_ACCOUNT }}/${{ env.STATE_BUCKET_KEY }}" -backend-config="bucket=${{ env.STATE_BUCKET }}"
+          terraform init 
 
 
       - name: Terraform Plan
