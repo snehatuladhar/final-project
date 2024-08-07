@@ -1,17 +1,17 @@
 module "records" {
   source  = "terraform-aws-modules/route53/aws//modules/records"
   version = "~> 3.0"
-  zone_name = "sandbox.adex.ltd"  
+  zone_name = "sandbox.adex.ltd"
 
   records = [
     {
-      name = "todo"  
+      name = "todo"
       type = "A"
       alias = {
-        name    = "dualstack.sneha-webtier-alb-723709358.us-east-1.elb.amazonaws.com."
-        zone_id = "Z08712023TNVIZ18XIFTV"  
+        name    = module.web-alb.dns_name
+        zone_id = module.web-alb.zone_id
       }
-      evaluate_target_health = true
+
     }
   ]
 }

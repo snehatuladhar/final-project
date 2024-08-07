@@ -15,8 +15,7 @@ module "rds-autoscaling_alarm" {
   alarm_actions = [
     module.sns_topic.topic_arn  # Reference to SNS topic
   ]
-
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.db.id  # reference the RDS instance ID
+    DBInstanceIdentifier = module.db.db_instance_id  # Reference the RDS instance ID from module output
   }
 }
