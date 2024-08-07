@@ -1,0 +1,4 @@
+nginx_conf_src: "nginx.conf.j2"
+nginx_conf_dest: "/etc/nginx/sites-available/default"
+# project_path: "/home/ubuntu"
+# service_name: "WebLayer"

@@ -1,0 +1,52 @@
+name: Deploying an app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["updates"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  dev:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }} 
+      STATE_BUCKET: "8586-terraform-state"
+      STATE_BUCKET_KEY: "sneha/modules.tfstate"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Terraform Init
+        run: |
+          cd Terraform
+          terraform init -backend-config="region=${{ env.AWS_DEFAULT_REGION }}" -backend-config="key=${{ secrets.AWS_ACCOUNT }}/${{ env.STATE_BUCKET_KEY }}" -backend-config="bucket=${{ env.STATE_BUCKET }}"
+
+
+      - name: Terraform Plan
+        run: |
+          cd Terraform
+          terraform plan -var-file=terraform.tfvars
+
+      - name: Terraform Apply
+        run: |
+          cd terraform
+          terraform apply -var-file=terraform.tfvars -auto-approve
+
+      - name: Install Ansible and AWS collections
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible boto3 botocore
+          ansible-galaxy collection install amazon.aws
+
+      - name: Run Ansible Playbook
+        run: |
+          cd Ansible
+          ansible-inventory -i aws_ec2.yml --graph
+          ansible-playbook -i aws_ec2.yml playbook.yml

@@ -1,0 +1,79 @@
+    - name: Update apt package index
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - python3-venv
+          - nginx
+        state: present
+
+    # - name: Recursively remove application directory
+    #   ansible.builtin.file:
+    #     path: "/home/ubuntu/three-tier-web-application-flask/WebLayer"
+    #     state: absent
+      
+
+    - name: Clone the repository
+      git:
+        repo: https://github.com/snehatuladhar/three-tier-web-application-flask.git
+        dest: /home/ubuntu/three-tier-web-application-flask
+        version: main
+        force: yes
+      ignore_errors: yes
+
+    - name: Create Python virtual environment
+      command: python3 -m venv /home/ubuntu/three-tier-web-application-flask/WebLayer/.venv
+      args:
+        creates: /home/ubuntu/three-tier-web-application-flask/WebLayer/.venv
+
+    - name: Install Python packages from requirements.txt
+      pip:
+        requirements: /home/ubuntu/three-tier-web-application-flask/WebLayer/requirements.txt
+        virtualenv: /home/ubuntu/three-tier-web-application-flask/WebLayer/.venv
+
+    - name: Create Gunicorn systemd service file
+      copy:
+        dest: /etc/systemd/system/WebLayer.service
+        content: |
+          [Unit]
+          Description=Gunicorn instance for a simple hello world app
+          After=network.target
+
+          [Service]
+          User=ubuntu
+          Group=www-data
+          WorkingDirectory=/home/ubuntu/three-tier-web-application-flask/WebLayer
+          ExecStart=/home/ubuntu/three-tier-web-application-flask/WebLayer/.venv/bin/gunicorn -b localhost:8000 app:app
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd to pick up the new service file
+      systemd:
+        daemon_reload: yes
+
+    - name: Start and enable Gunicorn service
+      systemd:
+        name: WebLayer
+        state: started
+        enabled: yes
+    - name: Deploy Nginx configuration
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/default
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Start and enable Nginx
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes
+    
+
+
+

@@ -1,0 +1,103 @@
+    - name: Update APT packages
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - npm
+          - mysql-client
+          - python3-venv
+          - nginx
+        state: present
+
+    - name: Clone the repository
+      git:
+        repo: https://github.com/snehatuladhar/three-tier-web-application-flask.git
+        dest: /home/ubuntu/three-tier-web-application-flask
+        version: main
+        force: yes
+
+    - name: Ensure the ApplicationLayer directory exists
+      ansible.builtin.file:
+        path: /home/ubuntu/three-tier-web-application-flask/ApplicationLayer
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Ensure python3-venv is installed
+      ansible.builtin.apt:
+        name: python3-venv
+        state: present
+      become: yes
+
+    - name: Create Python virtual environment as root
+      ansible.builtin.command:
+        cmd: python3 -m venv /home/ubuntu/three-tier-web-application-flask/ApplicationLayer/.venv
+        creates: /home/ubuntu/three-tier-web-application-flask/ApplicationLayer/.venv
+      become: yes
+
+    - name: Change ownership of the virtual environment to the ubuntu user
+      ansible.builtin.command:
+        cmd: chown -R ubuntu:ubuntu /home/ubuntu/three-tier-web-application-flask/ApplicationLayer/.venv
+      become: yes
+
+    - name: Install Python requirements
+      ansible.builtin.command:
+        cmd: sudo -H -u ubuntu /home/ubuntu/three-tier-web-application-flask/ApplicationLayer/.venv/bin/pip install -r /home/ubuntu/three-tier-web-application-flask/ApplicationLayer/requirements.txt
+      become: yes
+
+    - name: Install PM2
+      npm:
+        name: pm2
+        global: yes
+
+    - name: Install AWS CLI
+      snap:
+        name: aws-cli
+        classic: yes
+
+    - name: Configure AWS CLI
+      shell: |
+        aws configure set default.region us-east-1
+      become: yes
+
+    - name: Start backend application with PM2
+      command: pm2 delete all
+      args:
+        chdir: /home/ubuntu/three-tier-web-application-flask/ApplicationLayer
+      ignore_errors: yes
+      become: yes
+
+    - name: Start backend application with PM2
+      command: pm2 start /home/ubuntu/three-tier-web-application-flask/ApplicationLayer/.venv/bin/python -- app.py
+      args:
+        chdir: /home/ubuntu/three-tier-web-application-flask/ApplicationLayer
+      become: yes
+
+    - name: Deploy Nginx configuration
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/default
+        owner: root
+        group: root
+        mode: '0644'
+      become: yes
+
+    - name: Test Nginx configuration
+      command: nginx -t
+      register: nginx_test
+      ignore_errors: yes
+      become: yes
+
+    - name: Fail if Nginx configuration test fails
+      fail:
+        msg: "Nginx configuration test failed"
+      when: nginx_test.rc != 0
+
+    - name: Restart Nginx to apply the changes
+      service:
+        name: nginx
+        state: restarted
+      become: yes
