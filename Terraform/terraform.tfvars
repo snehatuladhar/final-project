@@ -121,7 +121,7 @@ egress_rules_web = [
 ]
 sg_description_web = " SG for WEB ALB"
 
-#sg_alb_web
+#sg_alb_app
 sg_name_app = "app-alb-sg"
 tags_sg_app = {
   Name = "tf-app-alb-sg",
@@ -169,24 +169,7 @@ sg_name_web_server = "web_server-sg"
 tags_sg_web_server = {
   Name = "sneha-web_server-sg",
 }
-# ingress_rules_web_server = [
-#   {
-#     description = "allow on 443"
-#     from_port   = 443
-#     to_port     = 443
-#     protocol    = "tcp"
-#     cidr_blocks = null
-#     security_groups       = [aws_security_group.alb-sg.id]
-#   },
-#   {
-#     description = "allow on 80"
-#     from_port   = 80
-#     to_port     = 80
-#     protocol    = "tcp"
-#     cidr_blocks = null
-#     security_groups       = [aws_security_group.alb-sg.id]
-#   }
-# ]
+
 
 egress_rules_web_server = [
   {
@@ -206,24 +189,7 @@ sg_name_app_server = "app_server-sg"
 tags_sg_app_server = {
   Name = "sneha-app_server-sg",
 }
-# ingress_rules_app_server = [
-#   {
-#     description = "allow on 443"
-#     from_port   = 443
-#     to_port     = 443
-#     protocol    = "tcp"
-#     cidr_blocks = null
-#     security_groups       = [aws_security_group.alb-sg.id]
-#   },
-#   {
-#     description = "allow on 80"
-#     from_port   = 80
-#     to_port     = 80
-#     protocol    = "tcp"
-#     cidr_blocks = null
-#     security_groups       = [aws_security_group.alb-sg.id]
-#   }
-# ]
+
 
 egress_rules_app_server = [
   {

@@ -19,10 +19,6 @@ module "subnet-priv-1b" {
 
 }
 
-# output "subnet-priv-1b-id" {
-#   value = module.subnet-priv-1b.subnet_id
-# }
-
 # route table association 
 module "rt_ass_priv_1a" {
   source         = "./modules/rt_association"
@@ -37,30 +33,16 @@ module "rt_ass_priv_1b" {
 }
 
 
-
-# output "sg_alb_app_id" {
-#   value = module.sg_alb_app.sg_id
-# }
-
-
-
 #Application load balancer 
 module "app-alb" {
   source = "./modules/application_load_balancer"
   name   = "sneha-apptier-alb"
-  #internal           = false
-  #load_balancer_type = "application"
   security_groups = [module.sg_alb_app.sg_id]
   subnets         = [module.subnet-priv-1a.subnet_id, module.subnet-priv-1b.subnet_id]
   is_internal     = true
-  #enable_deletion_protection = false
-
   tags_alb = var.tags_alb_app
 }
 
-# output "app-alb_arn" {
-#   value = module.app-alb.alb_arn
-# }
 
 #Target Group
 module "appTier-tg" {
@@ -86,8 +68,6 @@ module "http_listener_app" {
   lb_arn   = module.app-alb.alb_arn
   port     = "80"
   protocol = "HTTP"
-  #ssl_policy        = "ELBSecurityPolicy-2016-08"
-  #certificate_arn   = "arn:aws:iam::187416307283:server-certificate/test_cert_rab3wuqwgja25ct3n4jdj2tzu4"
   tg_arn = module.appTier-tg.tg_arn
 }
 
@@ -106,57 +86,6 @@ module "app_asg1" {
 
 }
 
-# module "app_asg2" {
-#   source              = "./modules/autoscaling_group"
-#   vpc_zone_identifier = [module.subnet-priv-1b.subnet_id]
-#   desired_capacity  = 1
-#   max_size          = 1
-#   min_size          = 1
-#   target_group_arns = [module.appTier-tg.tg_arn]
-#   launch_template   = module.apptier_lt.lt_id
-#   value = "sneha-apptier_lt"
-#   asgname = "app_asg2"
-# }
-
-#security group for app server
-
-# module "sg_app_server" {
-#   source = "./modules/security_group"
-#   ingress_rules = [
-#     {
-#       description     = "allow on 443"
-#       from_port       = 443
-#       to_port         = 443
-#       protocol        = "tcp"
-#       cidr_blocks     = null
-#       security_groups = [module.sg_alb_web.sg_id]
-#     },
-#     {
-#       description     = "allow on 80"
-#       from_port       = 80
-#       to_port         = 80
-#       protocol        = "tcp"
-#       cidr_blocks     = null
-#       security_groups = [module.sg_alb_web.sg_id]
-#     },
-#     {
-#       description     = "allow on 4000"
-#       from_port       = 4000
-#       to_port         = 4000
-#       protocol        = "tcp"
-#       cidr_blocks     = nul  # Allow access from any IP address. 
-#       security_groups = [module.sg_alb_web.sg_id]
-#     }
-#   ] 
-#   #var.ingress_rules_app_server
-#   vpc_id = module.my_vpc.vpc_id
-#   sg_name        = var.sg_name_app_server
-#   sg_description = var.sg_description_app_server
-#   egress_rules   = var.egress_rules_app_server
-#   #security_groups = var.security_groups_app_server
-#   tags_sg = var.tags_sg_app_server
-# }
-
 module "sg_alb_app" {
   source         = "./modules/security_group"
   ingress_rules  = var.ingress_rules_app
@@ -164,7 +93,6 @@ module "sg_alb_app" {
   sg_name        = var.sg_name_app
   sg_description = var.sg_description_app
   egress_rules   = var.egress_rules_app
-  #security_groups = var.security_groups_app
   tags_sg = var.tags_sg_app
 }
 #security group for app server
@@ -178,7 +106,7 @@ module "sg_app_server" {
       to_port         = 443
       protocol        = "tcp"
       cidr_blocks      = ["0.0.0.0/0"]
-      # security_groups = [module.sg_alb_web.sg_id]
+  
     },
     {
       description     = "allow on 80"
@@ -186,28 +114,24 @@ module "sg_app_server" {
       to_port         = 80
       protocol        = "tcp"
       cidr_blocks     = ["0.0.0.0/0"]
-      # security_groups = [module.sg_alb_web.sg_id]
+    
     },
-    {
-     description     = "allow on 4000"
-      from_port       = 4000
-      to_port         = 4000
-      protocol        = "tcp"
-      cidr_blocks     = ["0.0.0.0/0"]
-      # security_groups = [module.sg_alb_web.sg_id] 
-    }
+    # {
+    #  description     = "allow on 4000"
+    #   from_port       = 4000
+    #   to_port         = 4000
+    #   protocol        = "tcp"
+    #   cidr_blocks     = ["0.0.0.0/0"]
+     
+    # }
 
   ] #var.ingress_rules_app_server
   vpc_id         = module.my_vpc.vpc_id
   sg_name        = var.sg_name_app_server
   sg_description = var.sg_description_app_server
   egress_rules   = var.egress_rules_app_server
-  #security_groups = var.security_groups_app_server
   tags_sg = var.tags_sg_app_server
 }
-
-
-
 
 #Launch template
 module "apptier_lt" {

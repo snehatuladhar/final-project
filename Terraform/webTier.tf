@@ -71,14 +71,14 @@ module "sg_web_server" {
       cidr_blocks     = ["0.0.0.0/0"]
       # security_groups = [module.sg_alb_web.sg_id]
     },
-    {
-      description     = "allow on 4000"
-      from_port       = 4000
-      to_port         = 4000
-      protocol        = "tcp"
-      cidr_blocks     = ["0.0.0.0/0"]
-      # security_groups = [module.sg_alb_web.sg_id]
-    }
+    # {
+    #   description     = "allow on 4000"
+    #   from_port       = 4000
+    #   to_port         = 4000
+    #   protocol        = "tcp"
+    #   cidr_blocks     = ["0.0.0.0/0"]
+    #   # security_groups = [module.sg_alb_web.sg_id]
+    # }
   ] #var.ingress_rules_web_server
   vpc_id         = module.my_vpc.vpc_id
   sg_name        = var.sg_name_web_server

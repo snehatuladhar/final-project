@@ -2,13 +2,10 @@ plugin: aws_ec2
 regions:
    - us-east-1
 hostnames:
-  # - ip-address
-  # - private-ip-address
   - instance-id
 groups:
   webtier: "'sneha-webtier_lt' in (tags.Name)"
   applicationtier: "'sneha-apptier_lt' in (tags.Name)"
 
 filters:
-  # tag:owner: sneha
   instance-state-name: running
